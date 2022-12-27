@@ -1,0 +1,55 @@
+<div class='container'>
+  <p class='title text-center mt-4'>PBL6: Raspberry Pi Firewall and Intrusion Detection System</p>
+  <p class='name text-center'>Bui Viet Huy Hoang</p>
+  <p class='class-name text-center'>19TCLC-DT4</p>
+  <table class='table table-dark table-striped-columns'>
+    <thead>
+      <tr>
+        <th scope='col'>Time</th>
+        <th scope='col'>Source IP</th>
+        <th scope='col'>Destination IP</th>
+        <th scope='col'>Message</th>
+      </tr>
+    </thead>
+    <tbody id='data'>
+      {{#each logs}}
+        <tr class='{{#switch this.priority}}{{#case 1}}table-success{{/case}}{{#case 2}}table-warning{{/case}}{{#case 3}}table-danger{{/case}}{{/switch}}'>
+          <th>{{formatDate this.dateTime}}</th>
+          <th>{{this.srcAddress}}</th>
+          <th>{{this.destAddress}}</th>
+          <th>{{this.message}}</th>
+        </tr>
+      {{/each}}
+    </tbody>
+  </table>
+</div>
+<script src='/socket.io/socket.io.js'></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const socket = io();
+    socket.on('data', (data) => {
+      const { logs } = data
+      const body = document.querySelector('#data')
+      const html = logs.map((log) => {
+        let className = ''
+        switch (log.priority) {
+          case 1:
+            className = 'table-success'
+            break
+          case 2:
+            className = 'table-warning'
+            break
+          case 3: 
+            className = 'table-danger'
+        }
+        return `<tr class='${className}'>
+          <th>${new Date(log.dateTime).toLocaleString('en')}</th>
+          <th>${log.srcAddress}</th>
+          <th>${log.destAddress}</th>
+          <th>${log.message}</th>
+        </tr>`
+      }).join('')
+      body.innerHTML = html + body.innerHTML 
+    })
+  })
+</script>
